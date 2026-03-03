@@ -29,21 +29,36 @@ It only removes facial anatomy from image pixels.
 
 # 📁 Repository Contents
 
+## Core Scripts
 ```
 CTA-DEFACE/
 │
-├── run_CTA-DEFACE.py                 # nnUNet CPU inference + mask application
-├── cta_deface_pipeline_multi2.py     # Full multi-case batch pipeline
-├── cta_deface_convert.py             # Simple DICOM <-> NIfTI converter
+├── run_CTA-DEFACE.py                     # nnUNet CPU/GPU inference + mask application
+├── cta_deface_pipeline_multi2.py         # Full multi-case batch pipeline (DICOM→NIfTI→DEFACE→DICOM)
+├── cta_deface_convert.py                 # Standalone DICOM ↔ NIfTI converter
+```
+
+## Platform-Specific Setup & Execution
+```
+├── 🐧 Linux:
+│   ├── setup_cta_deface_cpu.sh           # CPU setup (installs dependencies, downloads model)
+│   ├── run_cta_deface_cpu.sh             # Wrapper to force CPU-only inference
+│   └── requirements-cta-deface.txt       # Dependencies for Linux
 │
-├── setup_cta_deface_cpu.sh           # Linux CPU setup script
-├── setup_cta_deface_cpu.ps1          # Windows CPU setup script
-├── run_cta_deface_batch.ps1          # Windows batch runner
-│
-├── requirements_cpu.txt              # Linux dependencies
-├── requirements_cta_deface_windows.txt
-│
-└── README.md                         # This file
+└── 🪟 Windows:
+    ├── setup_cta_deface_cpu.ps1          # CPU setup (PowerShell)
+    ├── download_cta_deface_model.ps1     # Model downloader (Windows only)
+    ├── run_cta_deface_batch.ps1          # Batch runner (PowerShell)
+    └── requirements_cta_deface_windows.txt  # Dependencies for Windows
+```
+
+## Data & Models
+```
+├── model/Dataset001_DEFACE/              # Pre-trained nnUNet weights (auto-downloaded)
+├── dicom_input/                          # Input DICOMs (place your data here)
+├── dicom_output/                         # Defaced DICOM output
+├── head_ct_samples/                      # Sample test data
+└── nnunet_data/                          # nnUNet environment data
 ```
 
 ---
@@ -52,11 +67,11 @@ CTA-DEFACE/
 
 ## Hardware
 - Any **CPU-only** computer  
-- RAM 8–16 GB recommended  
+- RAM 8-16 GB recommended  
 - Disk space: ~3× your DICOM dataset
 
 ## Software
-- Python **3.10–3.12**
+- Python **3.10-3.12**
 - Git
 - Windows PowerShell **or** Linux bash
 
@@ -183,7 +198,7 @@ On the Windows downloads page:
 
 Find Python 3.12.x
 
-Click “Download Python 3.12.x”
+Click "Download Python 3.12.x"
 
 ![Get Python 3.12](screenshots/find-python-3.12.png)
 
@@ -199,8 +214,8 @@ Double-click the downloaded .exe file.
 
 ⚠️ Before clicking Install, do this:
 
-✅ Check “Add Python 3.12 to PATH”
-✅ Then click “Install Now”
+✅ Check "Add Python 3.12 to PATH"
+✅ Then click "Install Now"
 
 This step is critical.
 
@@ -322,6 +337,105 @@ Output is written to:
 ```
 dicom_output/<case>/<slice>.dcm
 ```
+
+---
+
+# 💻 Command Reference
+
+## Individual Commands for Advanced Usage
+
+### A. DICOM → NIfTI Conversion Only
+Convert DICOM series to NIfTI format without defacing:
+
+**Linux/Windows (same command):**
+```bash
+python cta_deface_convert.py dicom2nii -i dicom_input -o nii_input
+```
+
+### B. NIfTI → DICOM Conversion Only  
+Convert defaced NIfTI back to DICOM format. Reuses original DICOM metadata:
+
+**Command:**
+```bash
+python cta_deface_convert.py nii2dicom -n nii_output/mycase_0000.nii.gz -r dicom_input -o dicom_defaced
+```
+
+**Parameters:**
+- `-n`: Path to defaced NIfTI file
+- `-r`: Original DICOM directory (for metadata reuse)
+- `-o`: Output DICOM directory
+
+**Output:**
+- Defaced DICOMs in `dicom_defaced/` with:
+  - New SeriesInstanceUID and SOPInstanceUIDs
+  - Same geometry/spacing as original
+  - SeriesDescription appended with "CTA-DEFACE"
+  - **Original patient info preserved** (not anonymized)
+
+---
+
+# ⚡ GPU Acceleration
+
+While this pipeline is optimized for **CPU-only** inference, you can enable **GPU acceleration** for faster processing:
+
+## Prerequisites
+- NVIDIA GPU with CUDA 11.8+ or ROCm support
+- CUDA/cuDNN drivers installed
+
+## GPU Installation (Linux/WSL)
+
+### 1. Install GPU-enabled PyTorch
+
+Instead of the CPU setup, activate your venv and install GPU PyTorch:
+
+```bash
+source .venv_cta_deface/bin/activate
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+For **ROCm** (AMD GPUs):
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.7
+```
+
+### 2. nnUNet will auto-detect GPU
+
+The `run_CTA-DEFACE.py` script will automatically detect and use available GPUs. No additional configuration needed.
+
+### 3. Run as normal
+
+```bash
+# Linux
+python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
+
+# Windows (with GPU torch installed)
+python .\cta_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\
+```
+
+## Performance Notes
+
+- **GPU speedup**: 5-10× faster on typical NVIDIA RTX GPUs
+- **VRAM requirement**: ~4-6 GB for inference
+- **Backward compatible**: CPU fallback automatically if GPU unavailable
+- **Mixed precision**: For even faster inference, nnUNet supports automatic mixed precision (AMP)
+
+## Troubleshooting GPU Issues
+
+```bash
+# Verify CUDA is available in PyTorch
+python -c "import torch; print(torch.cuda.is_available())"
+
+# Check CUDA version
+python -c "import torch; print(torch.version.cuda)"
+
+# Check available GPUs
+python -c "import torch; print(torch.cuda.device_count())"
+```
+
+If GPU is not detected:
+1. Verify NVIDIA drivers installed: `nvidia-smi`
+2. Reinstall PyTorch with correct CUDA version
+3. Check environment variables (especially on WSL)
 
 ---
 
