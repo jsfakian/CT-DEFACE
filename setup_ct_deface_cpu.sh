@@ -4,8 +4,8 @@ set -euo pipefail
 ### CONFIG #####################################################################
 
 PYTHON_BIN=${PYTHON_BIN:-python3}
-VENV_DIR=${VENV_DIR:-.venv_cta_deface}
-REQ_FILE=${REQ_FILE:-requirements-cta-deface.txt}
+VENV_DIR=${VENV_DIR:-.venv_ct_deface}
+REQ_FILE=${REQ_FILE:-requirements-ct_deface.txt}
 
 # Default nnUNet directory layout (local to repo)
 NNUNET_BASE=${NNUNET_BASE:-"$PWD/nnunet_data"}
@@ -20,7 +20,7 @@ GDRIVE_URL=${GDRIVE_URL:-"https://drive.google.com/drive/folders/1k4o35Dkl7PWd2y
 
 ###############################################################################
 
-echo "=== CTA-DEFACE CPU setup ==="
+echo "=== CT-DEFACE CPU setup ==="
 echo "Python:   ${PYTHON_BIN}"
 echo "Venv:     ${VENV_DIR}"
 echo "nnUNet:   raw='${nnUNet_raw}', preprocessed='${nnUNet_preprocessed}', results='${nnUNet_results}'"
@@ -137,7 +137,7 @@ echo "[5/5] Checking for CTA-DEFACE model..."
 mkdir -p "${MODEL_DIR}"
 
 if [ -d "${MODEL_SUBDIR}" ]; then
-    echo "Model directory '${MODEL_SUBDIR}' already exists – skipping download."
+    echo "Model directory '${MODEL_SUBDIR}' already exists - skipping download."
 else
     echo "Model directory not found. Attempting download from Google Drive:"
     echo "  ${GDRIVE_URL}"
@@ -170,7 +170,7 @@ echo
 
 cat << EOF
 
-=== CTA-DEFACE CPU environment ready ===
+=== CT-DEFACE CPU environment ready ===
 
 Virtualenv: ${VENV_DIR}
 To use it in this shell:
@@ -184,11 +184,11 @@ Environment variables (for nnUNet):
 Model location:
     ${MODEL_SUBDIR}
 
-To run CTA-DEFACE (CPU-only) once venv is active:
+To run CT-DEFACE (CPU-only) once venv is active:
     export CUDA_VISIBLE_DEVICES=""
-    python run_CTA-DEFACE.py -i input -o output
+    python run_CT-DEFACE.py -i input -o output
 
-(Optionally use the helper script 'run_cta_deface_cpu.sh' below.)
+(Optionally use the helper script 'run_ct_deface_cpu.sh' below.)
 
 EOF
 

@@ -1,29 +1,45 @@
 
-# 🧠 CT-DEFACE — CPU-Only CT Defacing Pipeline (DICOM ⇄ NIfTI)
+# 🧠 CT Defacer Pipeline (DICOM ⇄ NIfTI)
 
-CT-DEFACE is a **beginner-friendly** end-to-end pipeline for defacing CT head/neck scans:
+## 🎯 Pipeline Overview
 
-> **DICOM → NIfTI → nnUNet (mask) → Defaced NIfTI → Defaced DICOM**
+The **CT-DEFACE pipeline** is a batch processing wrapper that reduces facial re-identification risk in head CT images. It processes DICOM case folders and generates defaced versions while preserving the original DICOM structure.
 
-This fork adds:
+### What It Does
 
-- ✅ **CPU-only support** (no GPU / CUDA required)
-- ✅ **Linux & Windows** setup and run scripts
-- ✅ **Single-case and multi-case batch processing**
-- ✅ **Full DICOM header reuse** (no anonymization, only PixelData is changed)
-- ✅ **Robust handling of series, slice mismatches and nnUNet quirks**
+- Converts DICOM series → NIfTI format
+- Runs CTA-DEFACE segmentation model
+- Applies facial mask to image volume
+- Converts defaced NIfTI → DICOM (preserving headers)
 
-⚠️ **Important:** This pipeline **does not anonymize DICOM metadata**.  
-It only removes facial anatomy from image pixels.
+**Note:** Only pixel data are modified. Original DICOM metadata (patient IDs, UIDs) remain unchanged unless separately anonymized.
 
----
+### Pipeline Steps
 
-## 🌍 Who is this for?
+| Step | Input | Operation | Output |
+|------|-------|-----------|--------|
+| 1 | DICOM case folder | Convert to NIfTI | Intermediate NIfTI |
+| 2 | NIfTI volume | Run CTA-DEFACE model | Defaced NIfTI |
+| 3 | Defaced NIfTI | Replace voxel values | Defaced image |
+| 4 | Defaced image + original DICOM | Reconstruct series | Defaced DICOM |
 
-- Beginners with **zero experience** in nnUNet or medical imaging Python tooling  
-- Medical physicists, radiologists, AI researchers  
-- Anyone needing CT defacing **without GPU**  
-- Anyone wanting a **ready-to-run**, fully automated DICOM → NIfTI → DEFACE → DICOM workflow
+### Input & Output
+
+**Input:** Single case folder or directory with multiple case folders (one series per folder)
+
+**Output:**
+- Defaced DICOM series
+- Optional defaced NIfTI (for QA/analysis)
+- Temporary working files
+
+### Recommended Workflow
+
+1. Organize DICOM data (one series per case folder)
+2. Run defacing pipeline
+3. Perform visual QA
+4. Apply metadata anonymization
+5. Upload processed dataset
+
 
 ---
 
@@ -34,22 +50,22 @@ It only removes facial anatomy from image pixels.
 CT-DEFACE/
 │
 ├── run_CT-DEFACE.py                     # nnUNet CPU/GPU inference + mask application
-├── cta_deface_pipeline_multi2.py         # Full multi-case batch pipeline (DICOM→NIfTI→DEFACE→DICOM)
-├── cta_deface_convert.py                 # Standalone DICOM ↔ NIfTI converter
+├── ct_deface_pipeline_multi2.py         # Full multi-case batch pipeline (DICOM→NIfTI→DEFACE→DICOM)
+├── ct_deface_convert.py                 # Standalone DICOM ↔ NIfTI converter
 ```
 
 ## Platform-Specific Setup & Execution
 ```
 ├── 🐧 Linux:
-│   ├── setup_cta_deface_cpu.sh           # CPU setup (installs dependencies, downloads model)
-│   ├── run_cta_deface_cpu.sh             # Wrapper to force CPU-only inference
+│   ├── setup_ct_deface_cpu.sh           # CPU setup (installs dependencies, downloads model)
+│   ├── run_ct_deface_cpu.sh             # Wrapper to force CPU-only inference
 │   └── requirements-ct-deface.txt       # Dependencies for Linux
 │
 └── 🪟 Windows:
-    ├── setup_cta_deface_cpu.ps1          # CPU setup (PowerShell)
-    ├── download_cta_deface_model.ps1     # Model downloader (Windows only)
-    ├── run_cta_deface_batch.ps1          # Batch runner (PowerShell)
-    └── requirements_cta_deface_windows.txt  # Dependencies for Windows
+    ├── setup_ct_deface_cpu.ps1          # CPU setup (PowerShell)
+    ├── download_ct_deface_model.ps1     # Model downloader (Windows only)
+    ├── run_ct_deface_batch.ps1          # Batch runner (PowerShell)
+    └── requirements_ct_deface_windows.txt  # Dependencies for Windows
 ```
 
 ## Data & Models
@@ -87,17 +103,17 @@ cd CT-DEFACE
 
 ### 2. Run setup
 ```bash
-bash setup_cta_deface_cpu.sh
+bash setup_ct_deface_cpu.sh
 ```
 
-Creates `.venv_cta_deface/` and installs:
+Creates `.venv_ct_deface/` and installs:
 - nnUNetv2
 - CPU-only PyTorch
 - nibabel, SimpleITK, pydicom, tqdm, numpy…
 
 ### 3. Activate environment
 ```bash
-source .venv_cta_deface/bin/activate
+source .venv_ct_deface/bin/activate
 ```
 
 ---
@@ -106,7 +122,7 @@ source .venv_cta_deface/bin/activate
 
 ### A. Single-case defacing
 ```bash
-python cta_deface_pipeline_multi2.py     -i dicom_input     -o dicom_output
+python ct_deface_pipeline_multi2.py     -i dicom_input     -o dicom_output
 ```
 
 ### B. Multi-case defacing
@@ -120,7 +136,7 @@ dicom_input/
 
 Run:
 ```bash
-python cta_deface_pipeline_multi2.py     -i dicom_input     -o dicom_output     --nifti-root-out nifti_output
+python ct_deface_pipeline_multi2.py     -i dicom_input     -o dicom_output     --nifti-root-out nifti_output
 ```
 
 ---
@@ -255,7 +271,7 @@ cd C:\Users\<username>\Documents
 git clone https://github.com/jsfakian/CT-DEFACE.git
 ```
 
-## 5. Run setup and download `CTA_DEFACE` model from google
+## 5. Run setup and download `CT_DEFACE` model from google
 
 1. First allow Powershell to run ps1 scripts
 2. Setup CTA deface
@@ -265,8 +281,8 @@ In the PowerShell terminal run:
 
 ```
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-.\setup_cta_deface_cpu.ps1
-.\download_cta_deface_model.ps1
+.\setup_ct_deface_cpu.ps1
+.\download_ct_deface_model.ps1
 ```
 
 ---
@@ -293,14 +309,14 @@ Then place the dicom images you want to deface in `dicom_input`
 1. Open a PowerShell terminal
 2. Go to the directory of the CT-DEFACE
 3. Activate the virtual environment of CT-DEFACE
-4. Run the `cta_deface_pipeline_multi2.py` script
+4. Run the `ct_deface_pipeline_multi2.py` script
 
 Open a PowerShell terminal and run:
 
 ```
 cd C:\Users\<username>\Documents\CT-DEFACE
-.\.venv_cta_deface\Scripts\Activate.ps1
-python .\cta_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\ --nifti-root-out .\nifti_out\
+.\.venv_ct_deface\Scripts\Activate.ps1
+python .\ct_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\ --nifti-root-out .\nifti_out\
 ```
 
 ---
@@ -349,7 +365,7 @@ Convert DICOM series to NIfTI format without defacing:
 
 **Linux/Windows (same command):**
 ```bash
-python cta_deface_convert.py dicom2nii -i dicom_input -o nii_input
+python ct_deface_convert.py dicom2nii -i dicom_input -o nii_input
 ```
 
 ### B. NIfTI → DICOM Conversion Only  
@@ -357,7 +373,7 @@ Convert defaced NIfTI back to DICOM format. Reuses original DICOM metadata:
 
 **Command:**
 ```bash
-python cta_deface_convert.py nii2dicom -n nii_output/mycase_0000.nii.gz -r dicom_input -o dicom_defaced
+python ct_deface_convert.py nii2dicom -n nii_output/mycase_0000.nii.gz -r dicom_input -o dicom_defaced
 ```
 
 **Parameters:**
@@ -389,7 +405,7 @@ While this pipeline is optimized for **CPU-only** inference, you can enable **GP
 Instead of the CPU setup, activate your venv and install GPU PyTorch:
 
 ```bash
-source .venv_cta_deface/bin/activate
+source .venv_ct_deface/bin/activate
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
@@ -406,10 +422,10 @@ The `run_CT-DEFACE.py` script will automatically detect and use available GPUs. 
 
 ```bash
 # Linux
-python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
+python ct_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 
 # Windows (with GPU torch installed)
-python .\cta_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\
+python .\ct_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\
 ```
 
 ## Performance Notes
@@ -442,7 +458,7 @@ If GPU is not detected:
 # 💻 CLI Reference
 
 ```
-python cta_deface_pipeline_multi2.py     -i <dicom_root_in>     -o <dicom_root_out>     [--nifti-root-out PATH]     [-w work_deface_batch]     [--cta-extra-args ...]
+python ct_deface_pipeline_multi2.py     -i <dicom_root_in>     -o <dicom_root_out>     [--nifti-root-out PATH]     [-w work_deface_batch]     [--ct-extra-args ...]
 ```
 
 ---

@@ -123,7 +123,7 @@ This presentation covers:
 
 **Step 2: Press the Button** (Run One Command)
 ```
-python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
+python ct_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 ```
 - That's it! Windows or Mac/Linux, same command
 - Grab a coffee—it takes a few minutes per scan

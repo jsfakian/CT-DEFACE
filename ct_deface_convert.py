@@ -187,7 +187,7 @@ def nifti_to_dicom(nifti_file: str, ref_dicom_dir: str, output_dir: str):
 
         # Make it obvious this is defaced / processed
         ds.SeriesDescription = (getattr(ds, "SeriesDescription", "") + " CT-DEFACE").strip()
-        ds.ImageComments = "Generated from NIfTI via cta_deface_convert.py"
+        ds.ImageComments = "Generated from NIfTI via ct_deface_convert.py"
 
         # Update instance number if needed
         ds.InstanceNumber = i + 1

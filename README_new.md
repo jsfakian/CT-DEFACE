@@ -2,9 +2,9 @@ CPU-only, idempotent setup pipeline
 
 requirements-ct-deface.txt
 
-setup_cta_deface_cpu.sh (main installer, safe to re-run)
+setup_ct_deface_cpu.sh (main installer, safe to re-run)
 
-run_cta_deface_cpu.sh wrapper so inference is always forced to CPU
+run_ct_deface_cpu.sh wrapper so inference is always forced to CPU
 
 Notes:
 
@@ -20,11 +20,11 @@ It is safe to re-run any time; it just skips already-done steps.
 
 DICOM ➜ NIfTI (for CT-DEFACE input): 
 
-python cta_deface_convert.py dicom2nii -i dicom_input -o nii_input
+python ct_deface_convert.py dicom2nii -i dicom_input -o nii_input
 
 NIfTI ➜ DICOM (defaced volume back to DICOM)
 
-python cta_deface_convert.py nii2dicom -n nii_output/mycase_0000.nii.gz -r dicom_input -o dicom_defaced
+python ct_deface_convert.py nii2dicom -n nii_output/mycase_0000.nii.gz -r dicom_input -o dicom_defaced
 
 where
 
@@ -40,7 +40,7 @@ where
 
 FULL pipeline: DICOM → NIfTI → CT-DEFACE → NIfTI → DICOM (fully reuse the original DICOM headers (no anonymization, same UIDs, same patient info) — only PixelData is replaced)
 
-python cta_deface_pipeline_fullref.py -i /path/to/dicom_original -o /path/to/dicom_defaced
+python ct_deface_pipeline_fullref.py -i /path/to/dicom_original -o /path/to/dicom_defaced
 
 DICOM → NIfTI: Reads the single series in /path/to/dicom_original / Writes NIfTI to work_deface_single/nifti_in/SeriesUID_0000.nii.gz
 

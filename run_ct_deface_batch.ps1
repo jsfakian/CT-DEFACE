@@ -8,20 +8,20 @@ Param(
     [string]$NiftiRootOut = "",
     [string]$WorkRoot = "work_deface_batch",
 
-    [string]$VenvName = ".venv_cta_deface",
+    [string]$VenvName = ".venv_ct_deface",
 
-    # Extra args passed directly to run_CTA-DEFACE.py
+    # Extra args passed directly to run_CT-DEFACE.py
     [string[]]$CtaExtraArgs = @()
 )
 
-Write-Host "=== CTA-DEFACE batch run (Windows) ==="
+Write-Host "=== CT-DEFACE batch run (Windows) ==="
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $venvPath = Join-Path $repoRoot $VenvName
 $venvPython = Join-Path $venvPath "Scripts\python.exe"
 
 if (-Not (Test-Path $venvPython)) {
-    Write-Error "Virtualenv not found at $venvPath. Run setup_cta_deface_cpu.ps1 first."
+    Write-Error "Virtualenv not found at $venvPath. Run setup_ct_deface_cpu.ps1 first."
     exit 1
 }
 
@@ -31,7 +31,7 @@ if ($NiftiRootOut -ne "") {
     $NiftiRootOut = (Resolve-Path $NiftiRootOut -Relative:$false)
 }
 
-$pipelineScript = Join-Path $repoRoot "cta_deface_pipeline_multi2.py"
+$pipelineScript = Join-Path $repoRoot "ct_deface_pipeline_multi2.py"
 if (-Not (Test-Path $pipelineScript)) {
     Write-Error "Pipeline script not found: $pipelineScript"
     exit 1
@@ -51,7 +51,7 @@ if ($NiftiRootOut -ne "") {
 }
 
 if ($CtaExtraArgs.Count -gt 0) {
-    $cmd += @("--cta-extra-args")
+    $cmd += @("--ct-extra-args")
     $cmd += $CtaExtraArgs
 }
 

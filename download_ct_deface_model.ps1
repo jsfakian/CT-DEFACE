@@ -1,5 +1,5 @@
 Param(
-    [string]$VenvName = ".venv_cta_deface",
+    [string]$VenvName = ".venv_ct_deface",
     [string]$ModelFolderUrl = "https://drive.google.com/drive/folders/1k4o35Dkl7PWd2yvHqWA2ia-BNKrWBrqg?usp=sharing"
 )
 
@@ -17,7 +17,7 @@ Write-Host "[INFO] Venv python: $venvPython"
 
 if (-not (Test-Path $venvPython)) {
     Write-Error "Virtualenv python not found at: $venvPython"
-    Write-Error "Run setup first (setup_cta_deface_cpu.ps1) or set -VenvName to the correct venv folder."
+    Write-Error "Run setup first (setup_ct_deface_cpu.ps1) or set -VenvName to the correct venv folder."
     exit 1
 }
 

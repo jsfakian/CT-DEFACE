@@ -168,7 +168,7 @@ def dicom_to_nifti(dicom_dir: str, output_dir: str) -> str:
 # Run CT-DEFACE (CPU) and collect outputs
 # -------------------------------------------------------------------------
 
-def run_cta_deface(nifti_in_dir: str, nifti_out_dir: str, extra_args=None) -> List[str]:
+def run_ct_deface(nifti_in_dir: str, nifti_out_dir: str, extra_args=None) -> List[str]:
     """
     Call run_CT-DEFACE.py with CPU-only settings.
 
@@ -641,7 +641,7 @@ def process_case(case_dicom_dir: str,
 
     # 2) CT-DEFACE
     print("[step 2] CT-DEFACE (CPU)")
-    run_cta_deface(nifti_in_dir, nifti_out_dir, extra_args=extra_args)
+    run_ct_deface(nifti_in_dir, nifti_out_dir, extra_args=extra_args)
 
     # 3) Select defaced NIfTI
     print("[step 3] Select defaced NIfTI")
@@ -684,7 +684,7 @@ def main():
         help="Working directory root for intermediate files."
     )
     ap.add_argument(
-        "--cta-extra-args", nargs=argparse.REMAINDER,
+        "--ct-extra-args", nargs=argparse.REMAINDER,
         help="Extra args passed to run_CT-DEFACE.py after -i/-o."
     )
 
@@ -708,7 +708,7 @@ def main():
     for c in cases:
         print("  -", os.path.relpath(c, root_in))
 
-    extra_args = args.cta_extra_args if args.cta_extra_args is not None else []
+    extra_args = args.ct_extra_args if args.ct_extra_args is not None else []
 
     for case_dir in cases:
         process_case(case_dir, root_in, root_out_dicom, root_out_nifti, work_root, extra_args=extra_args)

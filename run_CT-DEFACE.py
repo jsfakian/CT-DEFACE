@@ -29,7 +29,7 @@ def ensure_nnunet_naming(input_dir, suffix="_0000.nii.gz", copy=False):
     create a symlink (or copy) with the correct nnUNet-style name.
 
     Example:
-        CTA.nii.gz -> CTA_0000.nii.gz
+        CT.nii.gz -> CT_0000.nii.gz
 
     This makes nnUNet happy when using -i <folder> mode.
     """
@@ -167,8 +167,8 @@ def main(input_folder, output_folder):
         case_root = pred_file.stem
 
     print("...")
-    print(f"[run_CTA-DEFACE] Processing nnUNet prediction: {pred_file}")
-    print(f"[run_CTA-DEFACE] Case root: {case_root}")
+    print(f"[run_CT-DEFACE] Processing nnUNet prediction: {pred_file}")
+    print(f"[run_CT-DEFACE] Case root: {case_root}")
 
     # Load nnUNet prediction as mask
     mask_image = nib.load(pred_file)
@@ -179,26 +179,26 @@ def main(input_folder, output_folder):
     # Save explicit mask file
     mask_output_path = output_path / f"{case_root}_mask.nii.gz"
     save_mask(mask, affine, str(mask_output_path))
-    print(f"[run_CTA-DEFACE] Saved mask: {mask_output_path}")
+    print(f"[run_CT-DEFACE] Saved mask: {mask_output_path}")
 
     # Original CT/CTA is assumed to be in input_path with "_0000.nii.gz"
     original_image_path = input_path / f"{case_root}_0000.nii.gz"
     if not original_image_path.is_file():
         print(
-            f"[run_CTA-DEFACE] WARNING: original image not found: {original_image_path}. "
+            f"[run_CT-DEFACE] WARNING: original image not found: {original_image_path}. "
             "Skipping defaced image for this case."
         )
     else:
         defaced_output_path = output_path / f"{case_root}_defaced.nii.gz"
         create_defaced_image(str(original_image_path), mask, str(defaced_output_path))
-        print(f"[run_CTA-DEFACE] Defaced image saved to {defaced_output_path}")
+        print(f"[run_CT-DEFACE] Defaced image saved to {defaced_output_path}")
 
     # Optional: remove the raw nnUNet prediction (case.nii.gz) to avoid confusion
     try:
         pred_file.unlink()
-        print(f"[run_CTA-DEFACE] Removed raw nnUNet prediction: {pred_file}")
+        print(f"[run_CT-DEFACE] Removed raw nnUNet prediction: {pred_file}")
     except OSError as e:
-        print(f"[run_CTA-DEFACE] WARNING: could not remove {pred_file}: {e}")
+        print(f"[run_CT-DEFACE] WARNING: could not remove {pred_file}: {e}")
 
 
 

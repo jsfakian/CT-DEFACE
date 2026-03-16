@@ -207,7 +207,7 @@ add_content_slide(prs, "💻 Getting CT-DEFACE Ready", [
 # Slide 6: Running the Pipeline
 add_content_slide(prs, "▶️ Using CT-DEFACE", [
     "Step 1: Create folder 'dicom_input' and add your scans",
-    "Step 2: Run: python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output",
+    "Step 2: Run: python ct_deface_pipeline_multi2.py -i dicom_input -o dicom_output",
     "Step 3: Retrieve defaced scans from 'dicom_output' folder",
     "Processing Time: 2-5 minutes per scan"
 ])

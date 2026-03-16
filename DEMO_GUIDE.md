@@ -38,7 +38,7 @@ ls -la dicom_input/ | head -20
 mkdir -p dicom_output
 
 # Verify the pipeline script is ready
-ls -la cta_deface_pipeline_multi2.py
+ls -la ct_deface_pipeline_multi2.py
 ```
 
 ### 3. Optional: Pre-Run (Recommended)
@@ -95,16 +95,16 @@ For a 5-10 minute demo, you might want to run the job once before the presentati
 
 2. **Show the activation command:**
    ```bash
-   source .venv_cta_deface/bin/activate  # Linux/Mac
+   source .venv_ct_deface/bin/activate  # Linux/Mac
    # or
-   .\.venv_cta_deface\Scripts\Activate.ps1  # Windows
+   .\.venv_ct_deface\Scripts\Activate.ps1  # Windows
    ```
 
    **Say:** "I'm activating the Python environment that has CT-DEFACE and all its dependencies installed."
 
 3. **Show the actual command:**
    ```bash
-   python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
+   python ct_deface_pipeline_multi2.py -i dicom_input -o dicom_output
    ```
 
    **Say:** "Now I'll run the defacing command. It's simple: just ask Python to run our pipeline script, saying 'take images from dicom_input and put results in dicom_output.'"
@@ -381,10 +381,10 @@ These ensure even if live demo fails, you can still show the results clearly.
 
 ```bash
 # Activate environment
-source .venv_cta_deface/bin/activate
+source .venv_ct_deface/bin/activate
 
 # Run the pipeline
-python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
+python ct_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 
 # That's it!
 ```

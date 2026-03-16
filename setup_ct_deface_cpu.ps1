@@ -1,11 +1,11 @@
 Param(
     [string]$PythonExe = "python",
-    [string]$VenvName  = ".venv_cta_deface"
+    [string]$VenvName  = ".venv_ct_deface"
 )
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=== CTA-DEFACE CPU setup (Windows) ==="
+Write-Host "=== CT-DEFACE CPU setup (Windows) ==="
 
 # ------------------------
 # 1. Check Python
@@ -58,7 +58,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Install core requirements
-$reqFile = Join-Path $repoRoot "requirements_cta_deface_windows.txt"
+$reqFile = Join-Path $repoRoot "requirements_ct_deface_windows.txt"
 if (-not (Test-Path $reqFile)) {
     Write-Error ("Requirements file not found: {0}" -f $reqFile)
     exit 1
@@ -103,4 +103,4 @@ Write-Host ("Virtualenv: {0}" -f $venvPath)
 Write-Host "To activate in PowerShell:"
 Write-Host ("    & '{0}'" -f (Join-Path $venvPath "Scripts\Activate.ps1"))
 Write-Host "Then run:"
-Write-Host "    python cta_deface_pipeline_multi2.py -h"
+Write-Host "    python ct_deface_pipeline_multi2.py -h"
