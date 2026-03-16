@@ -1,7 +1,7 @@
 
-# 🧠 CTA-DEFACE — CPU-Only CT Defacing Pipeline (DICOM ⇄ NIfTI)
+# 🧠 CT-DEFACE — CPU-Only CT Defacing Pipeline (DICOM ⇄ NIfTI)
 
-CTA-DEFACE is a **beginner-friendly** end-to-end pipeline for defacing CT head/neck scans:
+CT-DEFACE is a **beginner-friendly** end-to-end pipeline for defacing CT head/neck scans:
 
 > **DICOM → NIfTI → nnUNet (mask) → Defaced NIfTI → Defaced DICOM**
 
@@ -31,9 +31,9 @@ It only removes facial anatomy from image pixels.
 
 ## Core Scripts
 ```
-CTA-DEFACE/
+CT-DEFACE/
 │
-├── run_CTA-DEFACE.py                     # nnUNet CPU/GPU inference + mask application
+├── run_CT-DEFACE.py                     # nnUNet CPU/GPU inference + mask application
 ├── cta_deface_pipeline_multi2.py         # Full multi-case batch pipeline (DICOM→NIfTI→DEFACE→DICOM)
 ├── cta_deface_convert.py                 # Standalone DICOM ↔ NIfTI converter
 ```
@@ -43,7 +43,7 @@ CTA-DEFACE/
 ├── 🐧 Linux:
 │   ├── setup_cta_deface_cpu.sh           # CPU setup (installs dependencies, downloads model)
 │   ├── run_cta_deface_cpu.sh             # Wrapper to force CPU-only inference
-│   └── requirements-cta-deface.txt       # Dependencies for Linux
+│   └── requirements-ct-deface.txt       # Dependencies for Linux
 │
 └── 🪟 Windows:
     ├── setup_cta_deface_cpu.ps1          # CPU setup (PowerShell)
@@ -81,8 +81,8 @@ CTA-DEFACE/
 
 ### 1. Clone repo
 ```bash
-git clone https://github.com/jsfakian/CTA-DEFACE.git
-cd CTA-DEFACE
+git clone https://github.com/jsfakian/CT-DEFACE.git
+cd CT-DEFACE
 ```
 
 ### 2. Run setup
@@ -252,7 +252,7 @@ In the Powershell terminal run:
 cd C:\Users\<username>\Documents
 ```
 ```
-git clone https://github.com/jsfakian/CTA-DEFACE.git
+git clone https://github.com/jsfakian/CT-DEFACE.git
 ```
 
 ## 5. Run setup and download `CTA_DEFACE` model from google
@@ -291,14 +291,14 @@ Then place the dicom images you want to deface in `dicom_input`
 ### Multi-case batch defacing
 
 1. Open a PowerShell terminal
-2. Go to the directory of the CTA-DEFACE
-3. Activate the virtual environment of CTA-DEFACE
+2. Go to the directory of the CT-DEFACE
+3. Activate the virtual environment of CT-DEFACE
 4. Run the `cta_deface_pipeline_multi2.py` script
 
 Open a PowerShell terminal and run:
 
 ```
-cd C:\Users\<username>\Documents\CTA-DEFACE
+cd C:\Users\<username>\Documents\CT-DEFACE
 .\.venv_cta_deface\Scripts\Activate.ps1
 python .\cta_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\ --nifti-root-out .\nifti_out\
 ```
@@ -313,7 +313,7 @@ python .\cta_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\ --ni
   `work_deface_batch/<case>/nifti_in/<SeriesUID>_0000.nii.gz`
 
 ## 2️⃣ nnUNetv2 (CPU) defacing
-`run_CTA-DEFACE.py` performs:
+`run_CT-DEFACE.py` performs:
 - Mask prediction (`*_mask.nii.gz`)
 - Defaced reconstruction (`*_defaced.nii.gz`)  
   (face replaced by safe background intensity)
@@ -369,7 +369,7 @@ python cta_deface_convert.py nii2dicom -n nii_output/mycase_0000.nii.gz -r dicom
 - Defaced DICOMs in `dicom_defaced/` with:
   - New SeriesInstanceUID and SOPInstanceUIDs
   - Same geometry/spacing as original
-  - SeriesDescription appended with "CTA-DEFACE"
+  - SeriesDescription appended with "CT-DEFACE"
   - **Original patient info preserved** (not anonymized)
 
 ---
@@ -400,7 +400,7 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 
 ### 2. nnUNet will auto-detect GPU
 
-The `run_CTA-DEFACE.py` script will automatically detect and use available GPUs. No additional configuration needed.
+The `run_CT-DEFACE.py` script will automatically detect and use available GPUs. No additional configuration needed.
 
 ### 3. Run as normal
 

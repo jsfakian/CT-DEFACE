@@ -1,14 +1,14 @@
-# CTA-DEFACE: Live Demo Walkthrough Guide
+# CT-DEFACE: Live Demo Walkthrough Guide
 ## For Non-Technical Stakeholders
 
 ---
 
 ## 📋 Demo Overview
 
-**Purpose:** Show in real-time how CTA-DEFACE works
+**Purpose:** Show in real-time how CT-DEFACE works
 **Duration:** 15-20 minutes
 **Audience:** Hospital staff, administrators, radiologists
-**Equipment:** Laptop with CTA-DEFACE already installed, projector/screen
+**Equipment:** Laptop with CT-DEFACE already installed, projector/screen
 
 **What you'll demonstrate:**
 1. Folder setup
@@ -21,7 +21,7 @@
 ## ✅ Pre-Demo Checklist (Do This Before the Presentation)
 
 ### 1. Preparation (30 minutes before)
-- [ ] Test that CTA-DEFACE is installed and working
+- [ ] Test that CT-DEFACE is installed and working
 - [ ] Have sample DICOM files ready in `dicom_input/` folder
 - [ ] Close unnecessary windows and applications
 - [ ] Set computer to full brightness
@@ -51,11 +51,11 @@ For a 5-10 minute demo, you might want to run the job once before the presentati
 ### PART 1: Introduction & Setup (3-4 minutes)
 
 **What to Say:**
-> "Let me show you how CTA-DEFACE works in action. I've already set up the software on this computer, and we have some sample CT scans ready to process."
+> "Let me show you how CT-DEFACE works in action. I've already set up the software on this computer, and we have some sample CT scans ready to process."
 
 **Actions:**
 1. Open a file manager (Windows Explorer or Finder)
-2. Navigate to: `C:\Users\[username]\Documents\CTA-DEFACE` (Windows) or `~/Documents/CTA-DEFACE` (Mac/Linux)
+2. Navigate to: `C:\Users\[username]\Documents\CT-DEFACE` (Windows) or `~/Documents/CT-DEFACE` (Mac/Linux)
 3. Show the three main folders:
    - **dicom_input/** — Contains the scan we're about to deface
    - **dicom_output/** — Where results will appear
@@ -100,7 +100,7 @@ For a 5-10 minute demo, you might want to run the job once before the presentati
    .\.venv_cta_deface\Scripts\Activate.ps1  # Windows
    ```
 
-   **Say:** "I'm activating the Python environment that has CTA-DEFACE and all its dependencies installed."
+   **Say:** "I'm activating the Python environment that has CT-DEFACE and all its dependencies installed."
 
 3. **Show the actual command:**
    ```bash
@@ -115,7 +115,7 @@ For a 5-10 minute demo, you might want to run the job once before the presentati
    ```
    Processing case: img001
    Converting DICOM to NIfTI...
-   Running CTA-DEFACE AI...
+   Running CT-DEFACE AI...
    Converting back to DICOM...
    Done with case: img001
    ```
@@ -324,7 +324,7 @@ These ensure even if live demo fails, you can still show the results clearly.
 
 **After showing it works, tell them:**
 
-> "If you're interested in using CTA-DEFACE for your hospital:
+> "If you're interested in using CT-DEFACE for your hospital:
 > 
 > 1. **Test Phase** (1-2 weeks): Process a small batch of real patient scans with physician oversight
 > 
@@ -393,7 +393,7 @@ python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 ```
 Processing case: img001
 Converting DICOM to NIfTI...
-Running CTA-DEFACE...
+Running CT-DEFACE...
 Converting back to DICOM...
 Completed: img001
 ```

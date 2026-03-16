@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-CTA-DEFACE conversion helper:
+CT-DEFACE conversion helper:
 - DICOM -> NIfTI (nnUNet-compatible naming)
 - NIfTI -> DICOM (using reference DICOM for metadata)
 
@@ -186,7 +186,7 @@ def nifti_to_dicom(nifti_file: str, ref_dicom_dir: str, output_dir: str):
         ds.SOPInstanceUID = generate_uid()
 
         # Make it obvious this is defaced / processed
-        ds.SeriesDescription = (getattr(ds, "SeriesDescription", "") + " CTA-DEFACE").strip()
+        ds.SeriesDescription = (getattr(ds, "SeriesDescription", "") + " CT-DEFACE").strip()
         ds.ImageComments = "Generated from NIfTI via cta_deface_convert.py"
 
         # Update instance number if needed
@@ -217,7 +217,7 @@ def nifti_to_dicom(nifti_file: str, ref_dicom_dir: str, output_dir: str):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="CTA-DEFACE DICOM <-> NIfTI converter (CPU-only friendly)."
+        description="CT-DEFACE DICOM <-> NIfTI converter (CPU-only friendly)."
     )
     subparsers = parser.add_subparsers(dest="cmd", required=True)
 

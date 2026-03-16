@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Batch CTA-DEFACE pipeline
+Batch CT-DEFACE pipeline
 
 For each DICOM case directory under dicom-root-in:
 
@@ -8,9 +8,9 @@ For each DICOM case directory under dicom-root-in:
         ↓
     NIfTI (single *_0000.nii.gz per case, nnUNet style)
         ↓
-    CTA-DEFACE (CPU-only, via run_CTA-DEFACE.py)
+    CT-DEFACE (CPU-only, via run_CT-DEFACE.py)
         ↓
-    Defaced NIfTI (chosen among CTA-DEFACE outputs)
+    Defaced NIfTI (chosen among CT-DEFACE outputs)
         ↓
     DICOM (defaced, full header reuse, only PixelData changed)
 
@@ -24,7 +24,7 @@ Features
   Output DICOM mirrors input structure under dicom-root-out.
 - Optional nifti-root-out to keep defaced NIfTIs per case.
 - Cleans per-case work directories (no stale nifti_out).
-- Tolerates CTA-DEFACE exit code != 0 as long as it produced .nii files.
+- Tolerates CT-DEFACE exit code != 0 as long as it produced .nii files.
 - Filters out mask NIfTIs and picks the defaced CT volume based on
   input basename (SeriesUID[_0000]) and naming.
 - When a DICOM folder has multiple SeriesInstanceUIDs, chooses the series
@@ -165,12 +165,12 @@ def dicom_to_nifti(dicom_dir: str, output_dir: str) -> str:
 
 
 # -------------------------------------------------------------------------
-# Run CTA-DEFACE (CPU) and collect outputs
+# Run CT-DEFACE (CPU) and collect outputs
 # -------------------------------------------------------------------------
 
 def run_cta_deface(nifti_in_dir: str, nifti_out_dir: str, extra_args=None) -> List[str]:
     """
-    Call run_CTA-DEFACE.py with CPU-only settings.
+    Call run_CT-DEFACE.py with CPU-only settings.
 
     - Cleans nifti_out_dir before running.
     - Allows non-zero exit code.
@@ -179,9 +179,9 @@ def run_cta_deface(nifti_in_dir: str, nifti_out_dir: str, extra_args=None) -> Li
     if extra_args is None:
         extra_args = []
 
-    script_path = os.path.join(os.path.dirname(__file__), "run_CTA-DEFACE.py")
+    script_path = os.path.join(os.path.dirname(__file__), "run_CT-DEFACE.py")
     if not os.path.isfile(script_path):
-        raise RuntimeError(f"run_CTA-DEFACE.py not found at: {script_path}")
+        raise RuntimeError(f"run_CT-DEFACE.py not found at: {script_path}")
 
     # Make sure output folder is clean for this case
     if os.path.isdir(nifti_out_dir):
@@ -193,16 +193,16 @@ def run_cta_deface(nifti_in_dir: str, nifti_out_dir: str, extra_args=None) -> Li
     env = os.environ.copy()
     env["CUDA_VISIBLE_DEVICES"] = ""  # force CPU
 
-    print(f"[CTA-DEFACE] Running: {' '.join(cmd)}")
+    print(f"[CT-DEFACE] Running: {' '.join(cmd)}")
     res = subprocess.run(cmd, env=env)
     if res.returncode != 0:
-        print(f"[CTA-DEFACE] WARNING: exited with code {res.returncode}")
+        print(f"[CT-DEFACE] WARNING: exited with code {res.returncode}")
 
     nii_files = sorted(glob.glob(os.path.join(nifti_out_dir, "*.nii*")))
     if not nii_files:
-        raise RuntimeError(f"CTA-DEFACE produced no NIfTI in {nifti_out_dir!r}")
+        raise RuntimeError(f"CT-DEFACE produced no NIfTI in {nifti_out_dir!r}")
 
-    print(f"[CTA-DEFACE] Output NIfTIs: {nii_files}")
+    print(f"[CT-DEFACE] Output NIfTIs: {nii_files}")
     return nii_files
 
 
@@ -212,10 +212,10 @@ def run_cta_deface(nifti_in_dir: str, nifti_out_dir: str, extra_args=None) -> Li
 
 def find_defaced_nifti(nifti_out_dir: str, nifti_input_file: str) -> str:
     """
-    Select the defaced CT NIfTI from CTA-DEFACE outputs.
+    Select the defaced CT NIfTI from CT-DEFACE outputs.
 
     Rules:
-    - Prefer files whose name contains 'defaced' (from patched run_CTA-DEFACE.py).
+    - Prefer files whose name contains 'defaced' (from patched run_CT-DEFACE.py).
     - Otherwise, consider .nii* files whose names do NOT contain 'mask'.
     - Prefer basenames starting with the SeriesUID from nifti_input.
     - Additionally require that the chosen file is NOT pixel-wise identical
@@ -253,8 +253,8 @@ def find_defaced_nifti(nifti_out_dir: str, nifti_input_file: str) -> str:
     candidates = defaced_named if defaced_named else non_mask
     if not candidates:
         raise RuntimeError(
-            f"CTA-DEFACE produced only mask NIfTIs in {nifti_out_dir!r}, "
-            "no candidate defaced image. Check run_CTA-DEFACE.py for this case."
+            f"CT-DEFACE produced only mask NIfTIs in {nifti_out_dir!r}, "
+            "no candidate defaced image. Check run_CT-DEFACE.py for this case."
         )
 
     # Prefer those whose basename starts with input SeriesUID
@@ -639,8 +639,8 @@ def process_case(case_dicom_dir: str,
     print("[step 1] DICOM -> NIfTI")
     nifti_input = dicom_to_nifti(case_dicom_dir, nifti_in_dir)
 
-    # 2) CTA-DEFACE
-    print("[step 2] CTA-DEFACE (CPU)")
+    # 2) CT-DEFACE
+    print("[step 2] CT-DEFACE (CPU)")
     run_cta_deface(nifti_in_dir, nifti_out_dir, extra_args=extra_args)
 
     # 3) Select defaced NIfTI
@@ -665,7 +665,7 @@ def process_case(case_dicom_dir: str,
 
 def main():
     ap = argparse.ArgumentParser(
-        description="Batch CTA-DEFACE pipeline: DICOM dirs -> defaced NIfTI + DICOM (full header reuse)."
+        description="Batch CT-DEFACE pipeline: DICOM dirs -> defaced NIfTI + DICOM (full header reuse)."
     )
     ap.add_argument(
         "-i", "--dicom-root-in", required=True,
@@ -685,7 +685,7 @@ def main():
     )
     ap.add_argument(
         "--cta-extra-args", nargs=argparse.REMAINDER,
-        help="Extra args passed to run_CTA-DEFACE.py after -i/-o."
+        help="Extra args passed to run_CT-DEFACE.py after -i/-o."
     )
 
     args = ap.parse_args()

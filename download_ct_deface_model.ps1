@@ -3,7 +3,7 @@ Param(
     [string]$ModelFolderUrl = "https://drive.google.com/drive/folders/1k4o35Dkl7PWd2yvHqWA2ia-BNKrWBrqg?usp=sharing"
 )
 
-Write-Host "=== CTA-DEFACE: Download pretrained model (Windows) ==="
+Write-Host "=== CT-DEFACE: Download pretrained model (Windows) ==="
 
 # Repo root = folder where this .ps1 is located
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path

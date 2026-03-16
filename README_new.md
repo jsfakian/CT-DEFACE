@@ -1,6 +1,6 @@
 CPU-only, idempotent setup pipeline
 
-requirements-cta-deface.txt
+requirements-ct-deface.txt
 
 setup_cta_deface_cpu.sh (main installer, safe to re-run)
 
@@ -18,7 +18,7 @@ It downloads the Google Drive model folder into ./model/Dataset001_DEFACE
 
 It is safe to re-run any time; it just skips already-done steps.
 
-DICOM ➜ NIfTI (for CTA-DEFACE input): 
+DICOM ➜ NIfTI (for CT-DEFACE input): 
 
 python cta_deface_convert.py dicom2nii -i dicom_input -o nii_input
 
@@ -36,15 +36,15 @@ where
 
 >> same geometry/spacing as reference
 
->> SeriesDescription appended with CTA-DEFACE
+>> SeriesDescription appended with CT-DEFACE
 
-FULL pipeline: DICOM → NIfTI → CTA-DEFACE → NIfTI → DICOM (fully reuse the original DICOM headers (no anonymization, same UIDs, same patient info) — only PixelData is replaced)
+FULL pipeline: DICOM → NIfTI → CT-DEFACE → NIfTI → DICOM (fully reuse the original DICOM headers (no anonymization, same UIDs, same patient info) — only PixelData is replaced)
 
 python cta_deface_pipeline_fullref.py -i /path/to/dicom_original -o /path/to/dicom_defaced
 
 DICOM → NIfTI: Reads the single series in /path/to/dicom_original / Writes NIfTI to work_deface_single/nifti_in/SeriesUID_0000.nii.gz
 
-CTA-DEFACE (CPU): Calls run_CTA-DEFACE.py -i work_deface_single/nifti_in -o work_deface_single/nifti_out
+CT-DEFACE (CPU): Calls run_CT-DEFACE.py -i work_deface_single/nifti_in -o work_deface_single/nifti_out
 
 NIfTI → DICOM (full header reuse): Loads the defaced NIfTI from nifti_out / Loads original DICOMs from /path/to/dicom_original
 

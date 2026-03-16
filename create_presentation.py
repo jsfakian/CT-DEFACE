@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Create a professional PPTX presentation for CTA-DEFACE
+Create a professional PPTX presentation for CT-DEFACE
 Non-technical stakeholder presentation
 """
 
@@ -167,7 +167,7 @@ def add_two_column_slide(prs, title, left_title, left_points, right_title, right
     return slide
 
 # Slide 1: Title Slide
-add_title_slide(prs, "CTA-DEFACE", "Protecting Patient Privacy in Medical Imaging")
+add_title_slide(prs, "CT-DEFACE", "Protecting Patient Privacy in Medical Imaging")
 
 # Slide 2: The Problem
 add_content_slide(prs, "🎯 The Problem", [
@@ -178,7 +178,7 @@ add_content_slide(prs, "🎯 The Problem", [
 ])
 
 # Slide 3: The Solution
-add_content_slide(prs, "🧠 Introducing CTA-DEFACE", [
+add_content_slide(prs, "🧠 Introducing CT-DEFACE", [
     "✓ Automatically removes facial anatomy from CT scans",
     "✓ Keeps all patient information intact (ID, dates, etc.)",
     "✓ Fast and easy to use—no special expertise needed",
@@ -196,7 +196,7 @@ add_content_slide(prs, "🔬 How It Actually Works", [
 ])
 
 # Slide 5: Setup Overview
-add_content_slide(prs, "💻 Getting CTA-DEFACE Ready", [
+add_content_slide(prs, "💻 Getting CT-DEFACE Ready", [
     "Windows & Linux: Same simple process",
     "1. Download Git & Python 3.12 (~15 min)",
     "2. Run one setup command (~15 min)",
@@ -205,7 +205,7 @@ add_content_slide(prs, "💻 Getting CTA-DEFACE Ready", [
 ])
 
 # Slide 6: Running the Pipeline
-add_content_slide(prs, "▶️ Using CTA-DEFACE", [
+add_content_slide(prs, "▶️ Using CT-DEFACE", [
     "Step 1: Create folder 'dicom_input' and add your scans",
     "Step 2: Run: python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output",
     "Step 3: Retrieve defaced scans from 'dicom_output' folder",
@@ -220,7 +220,7 @@ add_two_column_slide(prs, "⏱️ Speed Comparison",
      "• Verify quality",
      "• 15-30 min per scan",
      "• 50 cases = 12-25 hours"],
-    "Automated (CTA-DEFACE)",
+    "Automated (CT-DEFACE)",
     ["• Point to folder of images",
      "• Run one command",
      "• Computer works overnight",
@@ -265,7 +265,7 @@ add_content_slide(prs, "🚀 Getting Started", [
 
 # Slide 12: Summary
 add_content_slide(prs, "📌 Summary", [
-    "CTA-DEFACE removes facial features from medical images",
+    "CT-DEFACE removes facial features from medical images",
     "Keeps all clinical data and patient information",
     "Works on any computer without expensive hardware",
     "Data stays completely under your control",
@@ -273,9 +273,9 @@ add_content_slide(prs, "📌 Summary", [
 ])
 
 # Slide 13: Thank You
-add_title_slide(prs, "Questions?", "Let's discuss how CTA-DEFACE can help your organization")
+add_title_slide(prs, "Questions?", "Let's discuss how CT-DEFACE can help your organization")
 
 # Save presentation
-output_path = "CTA-DEFACE_Presentation.pptx"
+output_path = "CT-DEFACE_Presentation.pptx"
 prs.save(output_path)
 print(f"✓ Presentation created: {output_path}")

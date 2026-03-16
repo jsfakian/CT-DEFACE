@@ -1,4 +1,4 @@
-# CTA-DEFACE: Protecting Patient Privacy in Medical Imaging
+# CT-DEFACE: Protecting Patient Privacy in Medical Imaging
 ## A Presentation for Non-Technical Stakeholders
 
 ---
@@ -7,7 +7,7 @@
 
 This presentation covers:
 1. **The Problem** - Why patient privacy matters in medical imaging
-2. **The Solution** - What CTA-DEFACE does
+2. **The Solution** - What CT-DEFACE does
 3. **The Technology** - How it works (simplified)
 4. **Practical Setup** - Getting it running on your computer
 5. **Real-World Usage** - Running a defacing job
@@ -29,9 +29,9 @@ This presentation covers:
 
 ---
 
-## 🧠 Slide 2: Introducing CTA-DEFACE
+## 🧠 Slide 2: Introducing CT-DEFACE
 
-### Title: "CTA-DEFACE: Smart Face Removal from Medical Images"
+### Title: "CT-DEFACE: Smart Face Removal from Medical Images"
 
 **What it does:**
 - **Automatically removes facial anatomy** from CT head/neck scans
@@ -42,7 +42,7 @@ This presentation covers:
 
 **Real-World Example:**
 - A hospital wants to share 50 CT scans with a medical school for teaching
-- Instead of spending hours manually editing each image, CTA-DEFACE does it automatically in minutes
+- Instead of spending hours manually editing each image, CT-DEFACE does it automatically in minutes
 - Doctors can still use the clinical data for diagnosis and teaching
 
 **Visual Idea:** Side-by-side comparison: Original CT scan → Defaced CT scan. Show that the scan is useful but the face is removed.
@@ -51,16 +51,16 @@ This presentation covers:
 
 ## 🔬 Slide 3: How It Actually Works
 
-### Title: "The Magic Behind CTA-DEFACE" (Simplified)
+### Title: "The Magic Behind CT-DEFACE" (Simplified)
 
 **In Simple Terms:**
 
 1. **Step 1: Read the Images**
-   - You give CTA-DEFACE a folder of medical scans (DICOM files)
+   - You give CT-DEFACE a folder of medical scans (DICOM files)
    - These are the standard format hospitals use for CT, MRI, X-ray
 
 2. **Step 2: Identify the Face**
-   - CTA-DEFACE uses artificial intelligence (an "AI brain" trained on thousands of images)
+   - CT-DEFACE uses artificial intelligence (an "AI brain" trained on thousands of images)
    - It looks at each scan and says: "Here's the face, here's everything else"
    - It creates a map of where the facial structures are
 
@@ -82,21 +82,21 @@ This presentation covers:
 
 ---
 
-## 💻 Slide 4: Setting Up CTA-DEFACE (Overview)
+## 💻 Slide 4: Setting Up CT-DEFACE (Overview)
 
-### Title: "Getting CTA-DEFACE Ready: The Simple Version"
+### Title: "Getting CT-DEFACE Ready: The Simple Version"
 
 **Windows Users:**
 1. Download and install Git (lets you download the software)
-2. Download and install Python 3.12 (the language CTA-DEFACE is written in)
-3. Run one PowerShell command to download CTA-DEFACE
+2. Download and install Python 3.12 (the language CT-DEFACE is written in)
+3. Run one PowerShell command to download CT-DEFACE
 4. Run one more command to set it up automatically
 5. Done! Ready to use
 
 **Mac/Linux Users:**
 1. Download and install Git
 2. Install Python 3.12
-3. Run one terminal command to download CTA-DEFACE
+3. Run one terminal command to download CT-DEFACE
 4. Run one more command to set it up automatically
 5. Done! Ready to use
 
@@ -112,9 +112,9 @@ This presentation covers:
 
 ---
 
-## ▶️ Slide 5: Running CTA-DEFACE
+## ▶️ Slide 5: Running CT-DEFACE
 
-### Title: "Using CTA-DEFACE: Three Simple Steps"
+### Title: "Using CT-DEFACE: Three Simple Steps"
 
 **Step 1: Get Your Scans Ready**
 - Create a folder called "dicom_input"
@@ -146,14 +146,14 @@ python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 
 ### Title: "Manual vs. Automatic: Time Savings"
 
-**Manual Defacing (Without CTA-DEFACE):**
+**Manual Defacing (Without CT-DEFACE):**
 - Pick up each scan in special software
 - Manually draw or paint over the face
 - Verify the work looks good
 - **Time per scan: 15-30 minutes**
 - 50 cases = 12-25 hours of work
 
-**Automated Defacing (With CTA-DEFACE):**
+**Automated Defacing (With CT-DEFACE):**
 - Point to folder, run command
 - Come back in a few hours
 - All 50 scans done automatically
@@ -166,7 +166,7 @@ python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 
 ## 🔐 Slide 7: Security & Privacy
 
-### Title: "How CTA-DEFACE Protects Your Data"
+### Title: "How CT-DEFACE Protects Your Data"
 
 **What Happens to Your Data:**
 - All processing happens **on your own computer**
@@ -197,7 +197,7 @@ python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 
 ## ✅ Slide 8: Key Benefits
 
-### Title: "Why Choose CTA-DEFACE?"
+### Title: "Why Choose CT-DEFACE?"
 
 **🚀 Speed**
 - Process 50 scans in a few hours instead of days
@@ -284,7 +284,7 @@ python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 
 ### Title: "Getting Started Today"
 
-**To evaluate CTA-DEFACE:**
+**To evaluate CT-DEFACE:**
 
 1. **Try it yourself** (30 minutes)
    - Download and install (15 min)
@@ -353,7 +353,7 @@ python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 
 **Artificial Intelligence (AI):**
 - Computer system that learns from examples
-- CTA-DEFACE was trained on 1000+ real CT scans
+- CT-DEFACE was trained on 1000+ real CT scans
 - Recognizes patterns to identify facial structures
 
 **CT Scan:**
@@ -364,7 +364,7 @@ python cta_deface_pipeline_multi2.py -i dicom_input -o dicom_output
 **HIPAA:**
 - Health Insurance Portability and Accountability Act
 - U.S. law requiring protection of patient medical information
-- CTA-DEFACE helps maintain HIPAA compliance
+- CT-DEFACE helps maintain HIPAA compliance
 
 **Pixel:**
 - Smallest unit of a digital image
