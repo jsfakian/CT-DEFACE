@@ -61,9 +61,9 @@ def ensure_nnunet_naming(input_dir, suffix="_0000.nii.gz", copy=False):
 # -------------------------------------------------------------------------
 # nnUNet inference
 # -------------------------------------------------------------------------
-def run_nnunet_inference(input_folder, output_folder):
+def run_nnunet_inference(input_folder, output_folder, device="cpu"):
     """
-    Run nnUNetv2_predict (CPU-only) on all cases in input_folder.
+    Run nnUNetv2_predict on all cases in input_folder.
 
     NOTE: This function will exit with non-zero status if nnUNet fails.
     In your external pipeline, you may choose to ignore this and just
@@ -83,7 +83,7 @@ def run_nnunet_inference(input_folder, output_folder):
         "all",
         "--disable_tta",  # disable test-time augmentation for speed
         "-device",
-        "cpu",  # force CPU
+        device,
     ]
 
     print("Executing command:", " ".join(command))
@@ -136,7 +136,7 @@ def create_defaced_image(image_path, mask, output_path):
 # -------------------------------------------------------------------------
 # Main processing
 # -------------------------------------------------------------------------
-def main(input_folder, output_folder):
+def main(input_folder, output_folder, device="cpu"):
     input_path = Path(input_folder)
     output_path = Path(output_folder)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -145,7 +145,7 @@ def main(input_folder, output_folder):
     ensure_nnunet_naming(str(input_path), suffix="_0000.nii.gz", copy=False)
 
     # Run nnUNetv2 segmentation
-    run_nnunet_inference(str(input_path), str(output_path))
+    run_nnunet_inference(str(input_path), str(output_path), device=device)
 
     # For each nnUNet prediction, create:
     #   - case_mask.nii.gz
@@ -233,6 +233,13 @@ if __name__ == "__main__":
         required=True,
         help="Path to output folder where results will be saved",
     )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="cpu",
+        choices=["cpu", "cuda", "mps"],
+        help="Device for nnUNet inference (default: cpu).",
+    )
 
     args = parser.parse_args()
-    main(args.input_folder, args.output_folder)
+    main(args.input_folder, args.output_folder, device=args.device)
