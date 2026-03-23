@@ -51,6 +51,7 @@ CT-DEFACE/
 │
 ├── run_CT-DEFACE.py                     # nnUNet CPU/GPU inference + mask application
 ├── ct_deface_pipeline_multi2.py         # Full multi-case batch pipeline (DICOM→NIfTI→DEFACE→DICOM)
+├── ct_deface_pipeline_gpu.py            # GPU-only batch pipeline (DICOM→NIfTI→DEFACE→NIfTI)
 ├── ct_deface_convert.py                 # Standalone DICOM ↔ NIfTI converter
 ```
 
@@ -271,7 +272,7 @@ cd C:\Users\<username>\Documents
 git clone https://github.com/jsfakian/CT-DEFACE.git
 ```
 
-## 5. Run setup and download `CT_DEFACE` model from google
+## 5. Run setup and download `CTA_DEFACE` model from google
 
 1. First allow Powershell to run ps1 scripts
 2. Setup CTA deface
