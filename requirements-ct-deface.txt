@@ -10,8 +10,15 @@ pydicom>=2.4
 SimpleITK>=2.2
 
 # nnUNet v2 as used by CTA-DEFACE
+# Requires torch>=2.4 for top-level GradScaler import (from torch import GradScaler)
 nnunetv2>=2.4
 
 # Google Drive downloader for auto-fetching the model
 gdown>=5.0
 
+# PyTorch — CPU-only build to avoid NCCL/CUDA library conflicts
+# (pipeline runs with -device cpu; no GPU dependency needed)
+# Minimum 2.4.0 required: torch.GradScaler moved to top-level in 2.4
+torch==2.4.0+cpu
+torchvision==0.19.0+cpu
+torchaudio==2.4.0+cpu
