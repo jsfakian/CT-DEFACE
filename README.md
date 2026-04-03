@@ -274,16 +274,16 @@ git clone https://github.com/jsfakian/CT-DEFACE.git
 
 ## 5. Run setup and download `CTA_DEFACE` model from google
 
-1. First allow Powershell to run ps1 scripts
-2. Setup CTA deface
-3. Download CTA deface model
+1. Create the virtual environment
+2. Setup CT-DEFACE (installs dependencies)
+3. Download CT-DEFACE model
 
 In the PowerShell terminal run:
 
 ```
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-.\setup_ct_deface_cpu.ps1
-.\download_ct_deface_model.ps1
+python -m venv .venv_ct_deface
+powershell -ExecutionPolicy Bypass -File .\setup_ct_deface_cpu.ps1
+powershell -ExecutionPolicy Bypass -File .\download_ct_deface_model.ps1
 ```
 
 ---
@@ -316,9 +316,32 @@ Open a PowerShell terminal and run:
 
 ```
 cd C:\Users\<username>\Documents\CT-DEFACE
+Set-ExecutionPolicy -Scope Process Bypass
 .\.venv_ct_deface\Scripts\Activate.ps1
 python .\ct_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\ --nifti-root-out .\nifti_out\
 ```
+
+---
+
+# 🛠️ Troubleshooting
+
+## PowerShell script execution error
+
+If you see an error like:
+
+```
+File cannot be loaded because running scripts is disabled on this system.
+```
+
+Run this in your PowerShell terminal before executing any `.ps1` script:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+```
+
+This temporarily allows script execution for the current PowerShell session only. It resets automatically when you close the terminal.
+
+> **Note:** Do not use `powershell -ExecutionPolicy Bypass -File` to activate the virtual environment — that runs in a subprocess and will not activate the venv in your current shell.
 
 ---
 
