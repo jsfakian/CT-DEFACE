@@ -315,7 +315,7 @@ Then place the dicom images you want to deface in `dicom_input`
 Open a PowerShell terminal and run:
 
 ```
-cd C:\Users\<username>\Documents\CT-DEFACE
+cd C:\Users\<username>\Documents\<ct deface directory>
 Set-ExecutionPolicy -Scope Process Bypass
 .\.venv_ct_deface\Scripts\Activate.ps1
 python .\ct_deface_pipeline_multi2.py -i .\dicom_input\ -o .\dicom_output\ --nifti-root-out .\nifti_out\
