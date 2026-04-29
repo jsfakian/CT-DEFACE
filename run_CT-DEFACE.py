@@ -179,49 +179,49 @@ def main(input_folder, output_folder, device="cpu"):
         if pred_file.name.endswith("_mask.nii.gz") or pred_file.name.endswith("_defaced.nii.gz"):
             continue
 
-    # pred_file.name is something like "1.2.840....885.nii.gz"
-    name = pred_file.name
-    if name.endswith(".nii.gz"):
-        case_root = name[:-7]  # strip ".nii.gz"
-    elif name.endswith(".nii"):
-        case_root = name[:-4]  # strip ".nii"
-    else:
-        # Fallback: Path.stem (last suffix only)
-        case_root = pred_file.stem
+        # pred_file.name is something like "1.2.840....885.nii.gz"
+        name = pred_file.name
+        if name.endswith(".nii.gz"):
+            case_root = name[:-7]  # strip ".nii.gz"
+        elif name.endswith(".nii"):
+            case_root = name[:-4]  # strip ".nii"
+        else:
+            # Fallback: Path.stem (last suffix only)
+            case_root = pred_file.stem
 
-    print("...")
-    print(f"[run_CT-DEFACE] Processing nnUNet prediction: {pred_file}")
-    print(f"[run_CT-DEFACE] Case root: {case_root}")
+        print("...")
+        print(f"[run_CT-DEFACE] Processing nnUNet prediction: {pred_file}")
+        print(f"[run_CT-DEFACE] Case root: {case_root}")
 
-    # Load nnUNet prediction as mask
-    mask_image = nib.load(pred_file)
-    mask_data = mask_image.get_fdata()
-    mask = (mask_data > 0).astype(np.uint8)
-    affine = mask_image.affine
+        # Load nnUNet prediction as mask
+        mask_image = nib.load(pred_file)
+        mask_data = mask_image.get_fdata()
+        mask = (mask_data > 0).astype(np.uint8)
+        affine = mask_image.affine
 
-    # Save explicit mask file
-    mask_output_path = output_path / f"{case_root}_mask.nii.gz"
-    save_mask(mask, affine, str(mask_output_path))
-    print(f"[run_CT-DEFACE] Saved mask: {mask_output_path}")
+        # Save explicit mask file
+        mask_output_path = output_path / f"{case_root}_mask.nii.gz"
+        save_mask(mask, affine, str(mask_output_path))
+        print(f"[run_CT-DEFACE] Saved mask: {mask_output_path}")
 
-    # Original CT/CTA is assumed to be in input_path with "_0000.nii.gz"
-    original_image_path = input_path / f"{case_root}_0000.nii.gz"
-    if not original_image_path.is_file():
-        print(
-            f"[run_CT-DEFACE] WARNING: original image not found: {original_image_path}. "
-            "Skipping defaced image for this case."
-        )
-    else:
-        defaced_output_path = output_path / f"{case_root}_defaced.nii.gz"
-        create_defaced_image(str(original_image_path), mask, str(defaced_output_path))
-        print(f"[run_CT-DEFACE] Defaced image saved to {defaced_output_path}")
+        # Original CT/CTA is assumed to be in input_path with "_0000.nii.gz"
+        original_image_path = input_path / f"{case_root}_0000.nii.gz"
+        if not original_image_path.is_file():
+            print(
+                f"[run_CT-DEFACE] WARNING: original image not found: {original_image_path}. "
+                "Skipping defaced image for this case."
+            )
+        else:
+            defaced_output_path = output_path / f"{case_root}_defaced.nii.gz"
+            create_defaced_image(str(original_image_path), mask, str(defaced_output_path))
+            print(f"[run_CT-DEFACE] Defaced image saved to {defaced_output_path}")
 
-    # Optional: remove the raw nnUNet prediction (case.nii.gz) to avoid confusion
-    try:
-        pred_file.unlink()
-        print(f"[run_CT-DEFACE] Removed raw nnUNet prediction: {pred_file}")
-    except OSError as e:
-        print(f"[run_CT-DEFACE] WARNING: could not remove {pred_file}: {e}")
+        # Optional: remove the raw nnUNet prediction (case.nii.gz) to avoid confusion
+        try:
+            pred_file.unlink()
+            print(f"[run_CT-DEFACE] Removed raw nnUNet prediction: {pred_file}")
+        except OSError as e:
+            print(f"[run_CT-DEFACE] WARNING: could not remove {pred_file}: {e}")
 
 
 
