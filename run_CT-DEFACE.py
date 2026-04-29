@@ -137,8 +137,11 @@ def create_defaced_image(image_path: str, mask: np.ndarray, output_path: str) ->
         mask.astype(bool), structure=struct, iterations=iterations
     )
 
-    # 1st percentile is closer to true air (-1000 HU) than the 10th percentile
-    fill_value = np.percentile(image_data, 1)
+    # Use the median of voxels in the true CT air range (-1100 to -900 HU).
+    # This avoids scanner padding values (-3024, -2048) that skew percentile-
+    # based estimates far below physical air density.
+    air_voxels = image_data[(image_data > -1100) & (image_data < -900)]
+    fill_value = float(np.median(air_voxels)) if air_voxels.size > 0 else -1000.0
 
     defaced_image = np.where(mask_dilated, fill_value, image_data)
     defaced_nifti = nib.Nifti1Image(defaced_image, image.affine, image.header)
