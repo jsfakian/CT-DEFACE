@@ -9,3 +9,6 @@ dicom_input
 dicom_output
 input_back
 work_deface_batch
+.claude/
+CLAUDE.md
+__pycache__/*

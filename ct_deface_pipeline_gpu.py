@@ -47,16 +47,6 @@ from pydicom.uid import ImplicitVRLittleEndian
 from pydicom.dataset import FileMetaDataset
 import nibabel as nib
 
-# -------------------------------
-# Rotation mode for NIfTI->DICOM
-# -------------------------------
-# "none"     -> disable all heuristics (k=0 always)
-# "auto90"   -> auto rotation across k={0,1,3} (no 180°)
-# "auto_all" -> auto rotation across k={0,1,2,3}
-#
-# For safety in a mixed clinical / research repository, "none" or "auto90"
-# are recommended. You can change this here if you like.
-ROTATION_MODE = "auto90"   # "none" --> safest default
 
 
 # -------------------------------------------------------------------------
@@ -395,55 +385,103 @@ def prepare_dataset_for_write(ds: pydicom.dataset.Dataset):
         ds.is_little_endian = True
 
 
-def _determine_best_rotation(slice_def: np.ndarray,
-                             slice_dcm: np.ndarray,
-                             mode: str = "none") -> int:
+def orient_slice_to_dicom(
+    slice_arr: np.ndarray,
+    nifti_affine: np.ndarray,
+    nifti_dim_index: int,
+    ds: pydicom.dataset.Dataset,
+) -> np.ndarray:
     """
-    Determine best rotation (np.rot90(k)) for matching defaced NIfTI
-    to original DICOM. Controlled by ROTATION_MODE:
+    Reorient a 2D NIfTI slice so its rows/columns align with the DICOM
+    ImageOrientationPatient convention, derived deterministically from
+    geometry rather than by MSE comparison.
 
-        "none"     -> always return k=0
-        "auto90"   -> search k in {0,1,3}
-        "auto_all" -> search k in {0,1,2,3}
+    Algorithm
+    ---------
+    NIfTI stores voxels in RAS space; DICOM uses LPS space.
+    The RAS->LPS flip is [-1, -1, +1] on the first three axes.
 
-    Returns:
-        k = 0,1,2,3
+    The NIfTI affine maps (i, j, k) voxel indices to RAS mm.  Columns 0 and 1
+    of the affine (divided by their norms) give the RAS directions of the i
+    and j voxel axes.  Converting to LPS yields the in-plane voxel-axis
+    directions in DICOM space.
+
+    ImageOrientationPatient[0:3] = row cosine  (LPS direction of DICOM columns)
+    ImageOrientationPatient[3:6] = col cosine  (LPS direction of DICOM rows)
+
+    We find which pair of NIfTI voxel axes (after excluding the slice axis)
+    corresponds to the DICOM row and column directions by taking dot products,
+    then rotate / flip the 2D array to match.
     """
-    if mode == "none":
-        print("[rot-test] ROTATION_MODE=none → k=0")
-        return 0
+    iop = getattr(ds, "ImageOrientationPatient", None)
+    if iop is None or len(iop) != 6:
+        # No geometry information available; pass through unchanged
+        print("[orient] No ImageOrientationPatient; skipping reorientation.")
+        return slice_arr
 
-    if mode == "auto90":
-        allowed_ks = [0, 1, 3]       # forbid 180°
-    elif mode == "auto_all":
-        allowed_ks = [0, 1, 2, 3]    # full brute force
+    row_cos = np.array([float(x) for x in iop[0:3]])  # LPS
+    col_cos = np.array([float(x) for x in iop[3:6]])  # LPS
+
+    # RAS->LPS sign flip for the first two spatial components
+    ras_to_lps = np.array([-1.0, -1.0, 1.0])
+
+    # The two in-plane NIfTI voxel axes (excluding the chosen slice axis)
+    all_axes = [0, 1, 2]
+    in_plane_axes = [a for a in all_axes if a != nifti_dim_index]
+
+    # Direction of each in-plane NIfTI axis in LPS, derived from the affine
+    lps_dirs = []
+    for ax in in_plane_axes:
+        ras_dir = nifti_affine[:3, ax]
+        norm = np.linalg.norm(ras_dir)
+        if norm < 1e-9:
+            print("[orient] Degenerate affine column; skipping reorientation.")
+            return slice_arr
+        lps_dir = (ras_dir / norm) * ras_to_lps
+        lps_dirs.append(lps_dir)
+
+    # Dot products tell us which NIfTI axis aligns with DICOM row / col,
+    # and whether a flip is needed (negative dot = antiparallel)
+    dot_row = [float(np.dot(d, row_cos)) for d in lps_dirs]
+    dot_col = [float(np.dot(d, col_cos)) for d in lps_dirs]
+
+    # The NIfTI in-plane axis whose dot with row_cos is largest in magnitude
+    # is the one that maps to the DICOM row direction (and vice-versa for col)
+    if abs(dot_row[0]) >= abs(dot_row[1]):
+        # NIfTI axis in_plane_axes[0] -> DICOM columns (row cosine direction)
+        # NIfTI axis in_plane_axes[1] -> DICOM rows    (col cosine direction)
+        nifti_col_ax, nifti_row_ax = 0, 1
+        flip_col = dot_row[0] < 0
+        flip_row = dot_col[1] < 0
     else:
-        print(f"[rot-test] Invalid mode='{mode}', using k=0.")
-        return 0
+        # swapped
+        nifti_col_ax, nifti_row_ax = 1, 0
+        flip_col = dot_row[1] < 0
+        flip_row = dot_col[0] < 0
 
-    sd = slice_def.astype(np.float32)
-    so = slice_dcm.astype(np.float32)
-    if sd.shape != so.shape:
-        print("[rot-test] Slice shapes differ; returning k=0.")
-        return 0
+    # slice_arr axes: axis-0 corresponds to in_plane_axes[0],
+    #                 axis-1 corresponds to in_plane_axes[1]
+    # We want output axis-0 = DICOM row direction,
+    #         output axis-1 = DICOM col direction.
+    # DICOM pixel_array is (rows, cols) = (row-direction, col-direction).
 
-    errors = {}
-    for k in allowed_ks:
-        cand = np.rot90(sd, k=k)
-        if cand.shape != so.shape:
-            continue
-        diff = so - cand
-        err = float(np.mean(diff * diff))
-        errors[k] = err
+    if nifti_row_ax == 0 and nifti_col_ax == 1:
+        out = slice_arr
+    else:
+        # Transpose so that axis-0 = row direction, axis-1 = col direction
+        out = slice_arr.T
 
-    if not errors:
-        print("[rot-test] No valid rotations, defaulting to k=0.")
-        return 0
+    if flip_row:
+        out = np.flip(out, axis=0)
+    if flip_col:
+        out = np.flip(out, axis=1)
 
-    print(f"[rot-test] allowed_ks={allowed_ks}, errors={errors}")
-    best_k = min(errors, key=errors.get)
-    print(f"[rot-test] ROTATION_MODE={mode} → chosen k={best_k}")
-    return best_k
+    print(
+        f"[orient] nifti_row_ax={in_plane_axes[nifti_row_ax]} "
+        f"nifti_col_ax={in_plane_axes[nifti_col_ax]} "
+        f"flip_row={flip_row} flip_col={flip_col}"
+    )
+    return out
 
 
 def nifti_to_dicom_fullref(nifti_file: str, ref_dicom_dir: str, output_dir: str):
@@ -459,7 +497,8 @@ def nifti_to_dicom_fullref(nifti_file: str, ref_dicom_dir: str, output_dir: str)
     If the slice counts do not match exactly, updates only the overlapping
     number of slices and leaves extra DICOM slices unchanged.
 
-    Rotation behaviour is controlled by ROTATION_MODE.
+    Slice orientation is derived deterministically from DICOM geometry
+    via orient_slice_to_dicom().
     """
     nifti_file = os.path.abspath(nifti_file)
     ref_dicom_dir = os.path.abspath(ref_dicom_dir)
@@ -547,27 +586,22 @@ def nifti_to_dicom_fullref(nifti_file: str, ref_dicom_dir: str, output_dir: str)
     n_slices_update = min(n_slices_nifti, n_slices_ref)
     print(f"[nii2dicom] Updating first {n_slices_update} slices with defaced data.")
 
-    # Match dtype of reference pixel data
+    # Read RescaleIntercept/Slope from the first reference slice.
+    # These are constant across a CT series; read them once.
     sample_ref = pydicom.dcmread(chosen_list[0][0])
+    rescale_slope = float(getattr(sample_ref, "RescaleSlope", 1.0))
+    rescale_intercept = float(getattr(sample_ref, "RescaleIntercept", 0.0))
     if hasattr(sample_ref, "pixel_array"):
         ref_dtype = sample_ref.pixel_array.dtype
-        sample_orig_slice = sample_ref.pixel_array
     else:
         ref_dtype = np.int16
-        sample_orig_slice = None
+    print(
+        f"[nii2dicom] RescaleSlope={rescale_slope} "
+        f"RescaleIntercept={rescale_intercept} ref_dtype={ref_dtype}"
+    )
 
-    arr_slices_first = arr_slices_first.astype(ref_dtype)
-
-    # Determine rotation; always define best_k
-    if sample_orig_slice is not None:
-        idx_mid = 0 if n_slices_update == 1 else n_slices_update // 2
-        sample_def_slice = arr_slices_first[idx_mid]
-        best_k = _determine_best_rotation(
-            sample_def_slice, sample_orig_slice, mode=ROTATION_MODE
-        )
-    else:
-        best_k = 0
-        print("[rot-test] No sample_orig_slice; defaulting best_k=0")
+    # arr holds physical HU values (as written by SimpleITK); keep as float
+    # until after the rescale conversion below.
 
     # 1) Update overlapping slices
     for (src_path, ds_ref), slice_data in zip(
@@ -575,20 +609,25 @@ def nifti_to_dicom_fullref(nifti_file: str, ref_dicom_dir: str, output_dir: str)
         arr_slices_first[:n_slices_update]
     ):
         ds = ds_ref  # full header reuse
-        slice_arr = np.asarray(slice_data)
+        slice_physical = np.asarray(slice_data, dtype=np.float64)
 
-        # Apply chosen rotation
-        slice_arr = np.rot90(slice_arr, k=best_k)
-        #slice_arr = np.rot90(slice_arr, k=2) # Rotate 180
-        slice_arr = np.flip(slice_arr, axis=1)
+        # Reorient from NIfTI space to DICOM row/col convention
+        slice_physical = orient_slice_to_dicom(
+            slice_physical, nii.affine, chosen_dim_index, ds
+        )
 
-        if slice_arr.shape != (ds.Rows, ds.Columns):
+        if slice_physical.shape != (ds.Rows, ds.Columns):
             raise RuntimeError(
-                f"Slice from NIfTI has shape {slice_arr.shape}, expected "
+                f"Slice from NIfTI has shape {slice_physical.shape}, expected "
                 f"({ds.Rows}, {ds.Columns})."
             )
 
-        ds.PixelData = slice_arr.tobytes()
+        # Convert physical HU to stored pixel values to avoid double-intercept
+        slice_stored = (slice_physical - rescale_intercept) / rescale_slope
+        dtype_info = np.iinfo(ref_dtype)
+        slice_stored = np.clip(slice_stored, dtype_info.min, dtype_info.max).astype(ref_dtype)
+
+        ds.PixelData = slice_stored.tobytes()
         prepare_dataset_for_write(ds)
         out_name = os.path.join(output_dir, os.path.basename(src_path))
         ds.save_as(out_name)

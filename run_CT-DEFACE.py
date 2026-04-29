@@ -11,6 +11,7 @@ import re
 
 import nibabel as nib
 import numpy as np
+import scipy.ndimage
 
 #
 # nnUNet environment
@@ -110,7 +111,7 @@ def save_mask(mask, affine, output_path):
 # -------------------------------------------------------------------------
 # Create defaced image (CPU)
 # -------------------------------------------------------------------------
-def create_defaced_image(image_path, mask, output_path):
+def create_defaced_image(image_path: str, mask: np.ndarray, output_path: str) -> None:
     """
     Apply defacing using a binary mask on the CPU.
 
@@ -118,17 +119,28 @@ def create_defaced_image(image_path, mask, output_path):
     - mask: numpy array (same shape), 1 where face / region to remove is
     - output_path: where to save defaced NIfTI
 
-    Defacing strategy: voxels where mask==1 are set to the 10th percentile
-    of the original intensities.
+    Defacing strategy: voxels where mask==1 are set to the 1st percentile
+    of the original intensities (representative of background air ~-1000 HU).
+    The mask is dilated by ~2 mm in physical space before application to
+    avoid leaving a thin facial shell at the skin/air boundary.
     """
     image = nib.load(image_path)
     image_data = image.get_fdata()
-    percentile_10th = np.percentile(image_data, 10)
 
-    # Create boolean mask
-    mask_bool = mask.astype(bool)
+    # 2 mm physical dilation to cover partial-volume skin-edge voxels
+    voxel_size_mm = np.array(image.header.get_zooms()[:3], dtype=float)
+    dilation_mm = 2.0
+    radius_voxels = dilation_mm / voxel_size_mm
+    iterations = max(1, int(np.ceil(np.min(radius_voxels))))
+    struct = scipy.ndimage.generate_binary_structure(3, 1)
+    mask_dilated = scipy.ndimage.binary_dilation(
+        mask.astype(bool), structure=struct, iterations=iterations
+    )
 
-    defaced_image = np.where(mask_bool, percentile_10th, image_data)
+    # 1st percentile is closer to true air (-1000 HU) than the 10th percentile
+    fill_value = np.percentile(image_data, 1)
+
+    defaced_image = np.where(mask_dilated, fill_value, image_data)
     defaced_nifti = nib.Nifti1Image(defaced_image, image.affine, image.header)
     nib.save(defaced_nifti, output_path)
 
