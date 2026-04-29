@@ -12,3 +12,4 @@ work_deface_batch
 .claude/
 CLAUDE.md
 __pycache__/*
+.coverage

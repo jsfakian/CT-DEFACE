@@ -286,6 +286,8 @@ def find_defaced_nifti(nifti_out_dir: str, nifti_input_file: str) -> str:
                 )
         else:
             print("[defaced] Input and defaced shapes differ, assuming defacing applied.")
+    except RuntimeError:
+        raise
     except Exception as e:
         print(f"[defaced] WARNING: could not compare input/defaced NIfTIs: {e}")
 
