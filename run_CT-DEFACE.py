@@ -11,7 +11,6 @@ import re
 
 import nibabel as nib
 import numpy as np
-import scipy.ndimage
 
 #
 # nnUNet environment
@@ -109,33 +108,42 @@ def save_mask(mask, affine, output_path):
 
 
 # -------------------------------------------------------------------------
+# Mask dilation (ellipsoidal footprint, physically-correct for aniso voxels)
+# -------------------------------------------------------------------------
+def dilate_mask(mask: np.ndarray, affine: np.ndarray, dilation_mm: float = 2.0) -> np.ndarray:
+    voxel_sizes = np.sqrt((affine[:3, :3] ** 2).sum(axis=0))
+    try:
+        from scipy.ndimage import binary_dilation
+        radii = dilation_mm / voxel_sizes
+        half = np.ceil(radii).astype(int)
+        grids = np.ogrid[
+            -half[0]:half[0] + 1,
+            -half[1]:half[1] + 1,
+            -half[2]:half[2] + 1,
+        ]
+        footprint = sum((g / r) ** 2 for g, r in zip(grids, radii)) <= 1.0
+        return binary_dilation(mask, structure=footprint).astype(np.uint8)
+    except ImportError:
+        # Fallback: iterative axis-neighbour OR (slower, less precise for aniso voxels)
+        n_iters = int(np.ceil(dilation_mm / voxel_sizes.min()))
+        result = mask.astype(bool)
+        for _ in range(n_iters):
+            dilated = result.copy()
+            for ax in range(3):
+                dilated |= np.roll(result, 1, axis=ax)
+                dilated |= np.roll(result, -1, axis=ax)
+            result = dilated
+        return result.astype(np.uint8)
+
+
+# -------------------------------------------------------------------------
 # Create defaced image (CPU)
 # -------------------------------------------------------------------------
 def create_defaced_image(image_path: str, mask: np.ndarray, output_path: str) -> None:
-    """
-    Apply defacing using a binary mask on the CPU.
-
-    - image_path: original CT/CTA NIfTI
-    - mask: numpy array (same shape), 1 where face / region to remove is
-    - output_path: where to save defaced NIfTI
-
-    Defacing strategy: voxels where mask==1 are set to the 1st percentile
-    of the original intensities (representative of background air ~-1000 HU).
-    The mask is dilated by ~2 mm in physical space before application to
-    avoid leaving a thin facial shell at the skin/air boundary.
-    """
     image = nib.load(image_path)
     image_data = image.get_fdata()
 
-    # 2 mm physical dilation to cover partial-volume skin-edge voxels
-    voxel_size_mm = np.array(image.header.get_zooms()[:3], dtype=float)
-    dilation_mm = 2.0
-    radius_voxels = dilation_mm / voxel_size_mm
-    iterations = max(1, int(np.ceil(np.min(radius_voxels))))
-    struct = scipy.ndimage.generate_binary_structure(3, 1)
-    mask_dilated = scipy.ndimage.binary_dilation(
-        mask.astype(bool), structure=struct, iterations=iterations
-    )
+    mask_dilated = dilate_mask(mask, image.affine, dilation_mm=2.0)
 
     # Use the median of voxels in the true CT air range (-1100 to -900 HU).
     # This avoids scanner padding values (-3024, -2048) that skew percentile-
